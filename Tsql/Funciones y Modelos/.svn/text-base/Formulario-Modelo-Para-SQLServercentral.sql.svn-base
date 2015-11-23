@@ -1,0 +1,97 @@
+
+DECLARE @columns VARCHAR(8000);
+DECLARE @query VARCHAR(8000);
+DECLARE @mes1 varchar(2);
+DECLARE @ane1 varchar(4)
+SET @mes1='03';
+SET @ane1='2011'
+
+SELECT @columns = COALESCE(@columns + ',[' + cast(codesud as varchar) + ']',
+'[' + cast(codesud as varchar)+ ']')
+FROM #Mytable3
+GROUP BY codesud
+ORDER BY codesud
+
+SELECT @query = '
+SELECT * FROM (SELECT CODESUD,ACCOUNT FROM #Mytable3
+WHERE SEQUENCE >= 1 OR SEQUENCE <= 17 AND COVARNAME='''+CAST(@mes1 AS VARCHAR)+''' AND COVARYEAR='''+CAST(@ane1 AS VARCHAR)+''' AND FORMA=''F''
+) AS P 
+PIVOT
+(
+sum(ACCOUNT)
+FOR [codesud]
+IN (' + @columns + ')
+)
+AS p
+'
+FROM #Mytable3 as b
+
+EXECUTE(@query)
+
+
+SELECT top(10)*, 'SELECT '
+      + QUOTENAME(codigosudeban,'''')+','
+      + QUOTENAME(orden,'''')+','
+      + QUOTENAME(forma,'''')+','
+      + QUOTENAME(codigocontable,'''')+','
+	  + QUOTENAME(descripcion,'''')+','
+      + QUOTENAME(saldoreal,'''')+','
+	  + QUOTENAME(covarname,'''')+','
+      + QUOTENAME(covaryear,'''')
+      + ' UNION ALL'
+ FROM dbo.movimientoscaptura
+
+SELECT  top 500  'SELECT '
+      + QUOTENAME(codigosudeban,'''')+','
+      + cast(orden as varchar)+','
+      + QUOTENAME(forma,'''')+','
+      + QUOTENAME(codigocontable,'''')+','
+	  + cast(saldoreal as varchar)+','
+	  + QUOTENAME(covarname,'''')+','
+      + QUOTENAME(covaryear,'''')
+      + ' UNION ALL'
+ FROM dbo.movimientoscaptura where FORMA='F'
+
+CREATE TABLE #Mytable2
+(
+  codesud varchar,
+  sequence varchar,
+  form varchar,
+  caccount varchar,
+  account varchar,
+  covarname varchar,
+  covaryear varchar
+)
+
+CREATE TABLE #Mytable3
+(
+  codesud varchar(5),
+  sequence int,
+  forma varchar(1),
+  caccount varchar(10),
+  account numeric(18,2),
+  covarname varchar(2),
+  covaryear varchar(4)
+)
+
+
+Insert into #Mytable3
+ (codesud,sequence,form,caccount,account,covarname,covaryear)
+SELECT '05961',cast('1' as int),'A','1200000000',cast('9000000.00' as numeric(18,2)),'03','2011' 
+
+
+Insert into #Mytable3
+ (codesud,sequence,forma,caccount,account,covarname,covaryear)
+SELECT '05961',1,'A','1200000000',9000000.00,'03','2011' 
+
+select * from #Mytable3
+truncate table #Mytable3
+
+Insert into #Mytable3
+ (codesud,sequence,forma,caccount,account,covarname,covaryear)
+SELECT '05961',3,'F','5120000000',-246395.83,'03','2011' UNION ALL
+SELECT '03421',32,'F','4319910000',5987405.04,'03','2011' UNION ALL
+SELECT '03621',3,'F','5120000000',-8710527.17,'03','2011' UNION ALL
+SELECT '04721',3,'F','5120000000',-16825100.70,'03','2011' UNION ALL
+SELECT '04722',45,'F','4480910600',928.15,'03','2011' UNION ALL
+SELECT '04723',45,'F','4480910100',66064.50,'03','2011' 
