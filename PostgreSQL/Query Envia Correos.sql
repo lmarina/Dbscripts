@@ -1,0 +1,1 @@
+SELECT * FROM pypgmail('FOGADMAIL.FOGADE.GOV.VE','luis.marin@fogade.gob.ve','irama.abello@fogade.gob.ve,luis.marin@fogade.gob.ve','Prueba de la funcion envio de correos desde Postgres','Hola, esta es una prueba de la funcion pypgmail que puede ser invocada en postgres, este correo es descartable');
